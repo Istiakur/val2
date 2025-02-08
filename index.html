@@ -1,243 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Will You Be My Valentine?</title>
+  <!-- Optional: A romantic Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
   <style>
-    /* General Styles */
+    /* Reset and basic styling */
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(135deg, #ff7e5f, #feb47b);
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+      overflow: hidden; /* Prevent scrollbars when button moves */
+    }
+    .container {
+      width: 100%;
       height: 100vh;
+      position: relative;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
-    }
-
-    .container {
       text-align: center;
+    }
+    h1 {
+      font-family: 'Great Vibes', cursive;
       color: #fff;
+      font-size: 4em;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    .buttons {
+      /* This container holds the Yes button (in flow)
+         while the No button will be positioned absolutely inside .container */
       position: relative;
     }
-
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 20px;
-      animation: bounce 2s infinite ease-in-out;
-    }
-
-    /* Buttons */
-    .buttons {
-      display: flex;
-      justify-content: space-between;
-      width: 60%;
-      margin: 0 auto;
-    }
-
     button {
       padding: 15px 30px;
-      font-size: 1.2rem;
+      font-size: 1.2em;
+      margin: 10px;
       border: none;
-      border-radius: 40px; /* Chubby buttons */
+      border-radius: 30px;
       cursor: pointer;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
-      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
-      position: relative;
+      transition: transform 0.2s;
     }
-
-    #yesButton {
-      background-color: #ff6f61; /* Soft pink */
+    /* Yes Button styling */
+    #yesBtn {
+      background-color: #28a745;
       color: white;
     }
-
-    #noButton {
-      background-color: #ff4d4d; /* Bright red */
+    /* No Button initially placed near the Yes button */
+    #noBtn {
+      background-color: #dc3545;
       color: white;
+      position: absolute;
+      left: calc(50% + 120px);
+      top: 50%;
+      transform: translate(-50%, -50%);
     }
-
     button:hover {
-      transform: scale(1.1) translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Fireworks Animation */
-    .firework {
-      position: absolute;
-      width: 15px;
-      height: 15px;
-      border-radius: 50%;
-      box-shadow: 0 0 15px currentColor, 0 0 30px currentColor;
-      animation: explode 1.5s forwards;
-    }
-
-    @keyframes explode {
-      0% {
-        transform: scale(1);
-        opacity: 1;
-      }
-      100% {
-        transform: scale(6);
-        opacity: 0;
-      }
-    }
-
-    /* Heart Animation */
-    .heart {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      background: pink;
-      border-radius: 50%;
-      box-shadow: 0 0 10px pink, 0 0 20px red;
-      animation: heart-float 3s infinite ease-in-out;
-    }
-
-    @keyframes heart-float {
-      0% {
-        transform: translateY(0) scale(1);
-      }
-      50% {
-        transform: translateY(-30px) scale(1.2);
-      }
-      100% {
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    /* Thank You Message */
-    .thank-you {
-      display: none;
-      font-size: 2.5rem;
-      color: white;
-      text-shadow: 0 0 10px pink, 0 0 20px red;
-      animation: fadeIn 2s forwards;
-    }
-
-    @keyframes fadeIn {
-      0% {
-        opacity: 0;
-      }
-      100% {
-        opacity: 1;
-      }
-    }
-
-    /* Bounce Animation */
-    @keyframes bounce {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-20px);
-      }
+      transform: scale(1.1);
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1 id="question">Will you be my Valentine? ❤️</h1>
+    <h1>Will You Be My Valentine?</h1>
     <div class="buttons">
-      <button id="yesButton">Yes 🥰</button>
-      <button id="noButton">No 😢</button>
+      <button id="yesBtn">Yes</button>
+      <button id="noBtn">No</button>
     </div>
-    <div class="thank-you">❤️ Thank You! 🎉</div>
   </div>
 
+  <!-- Include the canvas-confetti library from a CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
-    const noButton = document.getElementById('noButton');
-    const yesButton = document.getElementById('yesButton');
+    // Select elements
     const container = document.querySelector('.container');
-    const question = document.getElementById('question');
-    const thankYou = document.querySelector('.thank-you');
+    const noBtn = document.getElementById('noBtn');
+    const yesBtn = document.getElementById('yesBtn');
 
-    let previousNoPosition = { left: 0, top: 0 };
-
-    // Move the "No" button smoothly when hovered
-    noButton.addEventListener('mousemove', () => {
+    // When the mouse gets close to (or enters) the "No" button,
+    // move it to a random position within the container.
+    noBtn.addEventListener('mouseenter', function () {
       const containerRect = container.getBoundingClientRect();
-      const yesButtonRect = yesButton.getBoundingClientRect();
-      const buttonWidth = noButton.offsetWidth;
-      const buttonHeight = noButton.offsetHeight;
+      const btnRect = noBtn.getBoundingClientRect();
 
-      let newLeft, newTop;
+      // Calculate the maximum X and Y values the button can take
+      const maxX = containerRect.width - btnRect.width;
+      const maxY = containerRect.height - btnRect.height;
 
-      do {
-        newLeft = Math.random() * (containerRect.width - buttonWidth);
-        newTop = Math.random() * (containerRect.height - buttonHeight);
-      } while (
-        Math.abs(newLeft - yesButtonRect.left) < 200 && // Safe distance from "Yes"
-        Math.abs(newTop - yesButtonRect.top) < 200 &&
-        Math.abs(newLeft - previousNoPosition.left) < 150 && // Far from previous position
-        Math.abs(newTop - previousNoPosition.top) < 150
-      );
+      // Generate random coordinates within the available space
+      const randomX = Math.random() * maxX;
+      const randomY = Math.random() * maxY;
 
-      noButton.style.transition = 'all 0.3s ease-in-out';
-      noButton.style.position = 'absolute';
-      noButton.style.left = `${newLeft}px`;
-      noButton.style.top = `${newTop}px`;
-
-      previousNoPosition = { left: newLeft, top: newTop };
+      noBtn.style.left = randomX + 'px';
+      noBtn.style.top = randomY + 'px';
     });
 
-    // Handle "Yes" button click
-    yesButton.addEventListener('click', () => {
-      // Hide question and buttons
-      question.style.display = 'none';
-      yesButton.style.display = 'none';
-      noButton.style.display = 'none';
-
-      // Show thank-you message
-      thankYou.style.display = 'block';
-
-      // Start fireworks, hearts, and emojis
-      setInterval(createFirework, 100);
-      setInterval(createHeart, 150);
-      setInterval(createEmoji, 200);
+    // When the "Yes" button is clicked, start the fireworks effect.
+    yesBtn.addEventListener('click', function () {
+      startFireworks();
+      // You can also show a special message if desired.
+      setTimeout(() => {
+        alert("Yay! Happy Valentine's Day!");
+      }, 500);
     });
 
-    // Create fireworks
-    function createFirework() {
-      const firework = document.createElement('div');
-      firework.classList.add('firework');
-      firework.style.color = ['#ff6f61', '#ff4d4d', '#ffeb3b', '#4caf50', '#9c27b0', '#ff9800'][Math.floor(Math.random() * 6)];
-      firework.style.left = `${Math.random() * 100}vw`;
-      firework.style.top = `${Math.random() * 100}vh`;
-      document.body.appendChild(firework);
+    // Fireworks effect using canvas-confetti:
+    function startFireworks() {
+      const duration = 5000; // animation duration in ms
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
 
-      setTimeout(() => {
-        firework.remove();
-      }, 1500);
-    }
+      const interval = setInterval(function () {
+        const timeLeft = animationEnd - Date.now();
 
-    // Create hearts
-    function createHeart() {
-      const heart = document.createElement('div');
-      heart.classList.add('heart');
-      heart.style.background = ['#ff6f61', '#ff4d4d', '#ffeb3b', '#4caf50', '#9c27b0', '#ff9800'][Math.floor(Math.random() * 6)];
-      heart.style.left = `${Math.random() * 100}vw`;
-      heart.style.top = `${Math.random() * 100}vh`;
-      document.body.appendChild(heart);
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          return;
+        }
 
-      setTimeout(() => {
-        heart.remove();
-      }, 3000);
-    }
-
-    // Create emojis
-    function createEmoji() {
-      const emoji = document.createElement('div');
-      emoji.classList.add('emoji');
-      emoji.textContent = ['❤️', '🥰', '💖', '🎉', '🎈', '✨'][Math.floor(Math.random() * 6)];
-      emoji.style.left = `${Math.random() * 100}vw`;
-      emoji.style.top = `${Math.random() * 100}vh`;
-      document.body.appendChild(emoji);
-
-      setTimeout(() => {
-        emoji.remove();
-      }, 5000);
+        // Adjust the number of particles based on the remaining time
+        const particleCount = Math.floor(50 * (timeLeft / duration));
+        // Fire from random positions across the screen.
+        confetti(Object.assign({}, defaults, {
+          particleCount,
+          origin: {
+            x: Math.random(),
+            y: Math.random() - 0.2
+          }
+        }));
+      }, 250);
     }
   </script>
 </body>

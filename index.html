@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Will You Be My Valentine?</title>
   <style>
+    /* General Styles */
     body {
       margin: 0;
       font-family: 'Arial', sans-serif;
-      background: linear-gradient(135deg, #ff7e5f, #feb47b);
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
       height: 100vh;
       display: flex;
       justify-content: center;
@@ -23,29 +24,30 @@
     }
 
     h1 {
-      font-size: 2.5rem;
+      font-size: 2rem;
       margin-bottom: 20px;
-      animation: bounce 2s infinite;
+      animation: bounce 2s infinite ease-in-out;
     }
 
+    /* Buttons */
     .buttons {
       display: flex;
       justify-content: center;
-      gap: 50px; /* Increased gap between buttons */
+      gap: 60px;
     }
 
     button {
-      padding: 10px 25px;
-      font-size: 1rem;
+      padding: 15px 30px;
+      font-size: 1.2rem;
       border: none;
-      border-radius: 30px; /* More rounded edges */
+      border-radius: 40px; /* Chubby buttons */
       cursor: pointer;
-      transition: transform 0.2s ease-in-out;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
     }
 
     #yesButton {
-      background-color: #ff6f61; /* Slightly brighter pink */
+      background-color: #ff6f61; /* Soft pink */
       color: white;
     }
 
@@ -55,27 +57,50 @@
     }
 
     button:hover {
-      transform: scale(1.1);
+      transform: scale(1.1) translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     }
 
-    @keyframes bounce {
-      0%, 100% {
-        transform: translateY(0);
+    /* Cute Panda/Puppy Images */
+    .animal {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background-size: cover;
+      background-position: center;
+      border-radius: 50%;
+      animation: float 5s infinite ease-in-out;
+    }
+
+    .panda {
+      background-image: url('https://i.imgur.com/3QZ7xJt.png'); /* Replace with your image */
+    }
+
+    .puppy {
+      background-image: url('https://i.imgur.com/8XJzqYk.png'); /* Replace with your image */
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0) rotate(0deg);
       }
       50% {
-        transform: translateY(-20px);
+        transform: translateY(-20px) rotate(5deg);
+      }
+      100% {
+        transform: translateY(0) rotate(-5deg);
       }
     }
 
     /* Fireworks Animation */
     .firework {
       position: absolute;
-      width: 10px;
-      height: 10px;
+      width: 15px;
+      height: 15px;
       background: yellow;
       border-radius: 50%;
-      box-shadow: 0 0 10px yellow, 0 0 20px orange;
-      animation: explode 1s forwards;
+      box-shadow: 0 0 15px yellow, 0 0 30px orange;
+      animation: explode 1.5s forwards;
     }
 
     @keyframes explode {
@@ -84,38 +109,38 @@
         opacity: 1;
       }
       100% {
-        transform: scale(5);
+        transform: scale(6);
         opacity: 0;
       }
     }
 
-    /* Flower Animation */
-    .flower {
+    /* Heart Animation */
+    .heart {
       position: absolute;
       width: 20px;
       height: 20px;
       background: pink;
       border-radius: 50%;
       box-shadow: 0 0 10px pink, 0 0 20px red;
-      animation: float 3s infinite ease-in-out;
+      animation: heart-float 3s infinite ease-in-out;
     }
 
-    @keyframes float {
+    @keyframes heart-float {
       0% {
-        transform: translateY(0) rotate(0deg);
+        transform: translateY(0) scale(1);
       }
       50% {
-        transform: translateY(-20px) rotate(180deg);
+        transform: translateY(-30px) scale(1.2);
       }
       100% {
-        transform: translateY(0) rotate(360deg);
+        transform: translateY(0) scale(1);
       }
     }
 
     /* Thank You Message */
     .thank-you {
       display: none;
-      font-size: 2rem;
+      font-size: 2.5rem;
       color: white;
       text-shadow: 0 0 10px pink, 0 0 20px red;
       animation: fadeIn 2s forwards;
@@ -129,14 +154,24 @@
         opacity: 1;
       }
     }
+
+    /* Bounce Animation */
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1 id="question">Will you be my Valentine?</h1>
     <div class="buttons">
-      <button id="yesButton">Yes</button>
-      <button id="noButton">No</button>
+      <button id="yesButton">Yes ❤️</button>
+      <button id="noButton">No ❌</button>
     </div>
     <div class="thank-you">❤️ Thank You! ❤️</div>
   </div>
@@ -148,7 +183,7 @@
     const question = document.getElementById('question');
     const thankYou = document.querySelector('.thank-you');
 
-    // Move the "No" button when hovered
+    // Move the "No" button smoothly when hovered
     noButton.addEventListener('mouseover', () => {
       const containerRect = container.getBoundingClientRect();
       const yesButtonRect = yesButton.getBoundingClientRect();
@@ -161,10 +196,11 @@
         newLeft = Math.random() * (containerRect.width - buttonWidth);
         newTop = Math.random() * (containerRect.height - buttonHeight);
       } while (
-        Math.abs(newLeft - yesButtonRect.left) < 150 && // Keep a safe distance from "Yes"
-        Math.abs(newTop - yesButtonRect.top) < 150
+        Math.abs(newLeft - yesButtonRect.left) < 200 && // Safe distance from "Yes"
+        Math.abs(newTop - yesButtonRect.top) < 200
       );
 
+      noButton.style.transition = 'all 0.3s ease-in-out';
       noButton.style.position = 'absolute';
       noButton.style.left = `${newLeft}px`;
       noButton.style.top = `${newTop}px`;
@@ -180,9 +216,10 @@
       // Show thank-you message
       thankYou.style.display = 'block';
 
-      // Start fireworks and flowers
+      // Start fireworks, hearts, and animals
       setInterval(createFirework, 100);
-      setInterval(createFlower, 200);
+      setInterval(createHeart, 150);
+      setInterval(createAnimal, 200);
     });
 
     // Create fireworks
@@ -195,20 +232,34 @@
 
       setTimeout(() => {
         firework.remove();
-      }, 1000);
+      }, 1500);
     }
 
-    // Create flowers
-    function createFlower() {
-      const flower = document.createElement('div');
-      flower.classList.add('flower');
-      flower.style.left = `${Math.random() * 100}vw`;
-      flower.style.top = `${Math.random() * 100}vh`;
-      document.body.appendChild(flower);
+    // Create hearts
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.classList.add('heart');
+      heart.style.left = `${Math.random() * 100}vw`;
+      heart.style.top = `${Math.random() * 100}vh`;
+      document.body.appendChild(heart);
 
       setTimeout(() => {
-        flower.remove();
+        heart.remove();
       }, 3000);
+    }
+
+    // Create animals (pandas/puppies)
+    function createAnimal() {
+      const animal = document.createElement('div');
+      animal.classList.add('animal');
+      animal.classList.add(Math.random() > 0.5 ? 'panda' : 'puppy');
+      animal.style.left = `${Math.random() * 100}vw`;
+      animal.style.top = `${Math.random() * 100}vh`;
+      document.body.appendChild(animal);
+
+      setTimeout(() => {
+        animal.remove();
+      }, 5000);
     }
   </script>
 </body>

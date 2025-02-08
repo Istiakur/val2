@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Will You Be My Valentine?</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .container {
+      text-align: center;
+      color: #fff;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      animation: bounce 2s infinite;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    #yesButton {
+      background-color: #67b26f;
+      color: white;
+    }
+
+    #noButton {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    button:hover {
+      transform: scale(1.1);
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    /* Heart Animation */
+    .heart {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: red;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: heart-float 3s infinite ease-in-out;
+    }
+
+    @keyframes heart-float {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Will you be my Valentine?</h1>
+    <div class="buttons">
+      <button id="yesButton">Yes</button>
+      <button id="noButton">No</button>
+    </div>
+  </div>
+
+  <script>
+    const noButton = document.getElementById('noButton');
+    const container = document.querySelector('.container');
+
+    // Move the "No" button when hovered
+    noButton.addEventListener('mouseover', () => {
+      const containerRect = container.getBoundingClientRect();
+      const buttonWidth = noButton.offsetWidth;
+      const buttonHeight = noButton.offsetHeight;
+
+      let newLeft, newTop;
+
+      do {
+        newLeft = Math.random() * (containerRect.width - buttonWidth);
+        newTop = Math.random() * (containerRect.height - buttonHeight);
+      } while (
+        Math.abs(newLeft - noButton.offsetLeft) < 100 &&
+        Math.abs(newTop - noButton.offsetTop) < 100
+      );
+
+      noButton.style.position = 'absolute';
+      noButton.style.left = `${newLeft}px`;
+      noButton.style.top = `${newTop}px`;
+    });
+
+    // Add hearts on click for "Yes"
+    const yesButton = document.getElementById('yesButton');
+    yesButton.addEventListener('click', () => {
+      alert("Yay! I'm so happy! ❤️");
+      setInterval(createHeart, 100);
+    });
+
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.classList.add('heart');
+      heart.style.left = `${Math.random() * 100}vw`;
+      heart.style.top = `${Math.random() * 100}vh`;
+      document.body.appendChild(heart);
+
+      setTimeout(() => {
+        heart.remove();
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Will You Be My Valentine?</title>
-  <!-- Optional: A romantic Google Font -->
+  <!-- A romantic Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
   <style>
-    /* Reset and basic styling */
+    /* Basic reset */
     * {
       box-sizing: border-box;
     }
@@ -15,13 +15,14 @@
       margin: 0;
       padding: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(45deg, #ff9a9e, #fad0c4);
-      overflow: hidden; /* Prevent scrollbars when button moves */
+      background: radial-gradient(circle, #ffdde1, #ee9ca7);
+      overflow: hidden;
+      height: 100vh;
     }
     .container {
-      width: 100%;
-      height: 100vh;
       position: relative;
+      width: 100%;
+      height: 100%;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -36,32 +37,31 @@
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     }
     .buttons {
-      /* This container holds the Yes button (in flow)
-         while the No button will be positioned absolutely inside .container */
       position: relative;
+      display: flex;
+      gap: 20px;
     }
     button {
       padding: 15px 30px;
       font-size: 1.2em;
-      margin: 10px;
       border: none;
       border-radius: 30px;
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: transform 0.2s, background-color 0.3s;
     }
-    /* Yes Button styling */
     #yesBtn {
       background-color: #28a745;
-      color: white;
+      color: #fff;
     }
-    /* No Button initially placed near the Yes button */
+    /* "No" button starts positioned near the "Yes" button, but its position will be updated */
     #noBtn {
       background-color: #dc3545;
-      color: white;
+      color: #fff;
       position: absolute;
-      left: calc(50% + 120px);
+      left: calc(50% + 150px);
       top: 50%;
       transform: translate(-50%, -50%);
+      transition: left 0.3s ease, top 0.3s ease;
     }
     button:hover {
       transform: scale(1.1);
@@ -77,64 +77,71 @@
     </div>
   </div>
 
-  <!-- Include the canvas-confetti library from a CDN -->
+  <!-- Fireworks (confetti) library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
-    // Select elements
     const container = document.querySelector('.container');
     const noBtn = document.getElementById('noBtn');
     const yesBtn = document.getElementById('yesBtn');
 
-    // When the mouse gets close to (or enters) the "No" button,
-    // move it to a random position within the container.
-    noBtn.addEventListener('mouseenter', function () {
-      const containerRect = container.getBoundingClientRect();
+    /**
+     * Move the "No" button to a new random position within the container.
+     * Uses container.clientWidth/Height to ensure the button always stays in view.
+     */
+    function moveNoButton() {
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+      const btnWidth = noBtn.offsetWidth;
+      const btnHeight = noBtn.offsetHeight;
+      const maxX = containerWidth - btnWidth;
+      const maxY = containerHeight - btnHeight;
+      const newX = Math.random() * maxX;
+      const newY = Math.random() * maxY;
+      noBtn.style.left = newX + 'px';
+      noBtn.style.top = newY + 'px';
+    }
+
+    // When the cursor enters the "No" button, move it immediately.
+    noBtn.addEventListener('mouseenter', moveNoButton);
+
+    // If the mouse moves close to the "No" button (within 100px), move it.
+    container.addEventListener('mousemove', (e) => {
       const btnRect = noBtn.getBoundingClientRect();
-
-      // Calculate the maximum X and Y values the button can take
-      const maxX = containerRect.width - btnRect.width;
-      const maxY = containerRect.height - btnRect.height;
-
-      // Generate random coordinates within the available space
-      const randomX = Math.random() * maxX;
-      const randomY = Math.random() * maxY;
-
-      noBtn.style.left = randomX + 'px';
-      noBtn.style.top = randomY + 'px';
+      const btnCenterX = btnRect.left + btnRect.width / 2;
+      const btnCenterY = btnRect.top + btnRect.height / 2;
+      const distance = Math.hypot(e.clientX - btnCenterX, e.clientY - btnCenterY);
+      if (distance < 100) {
+        moveNoButton();
+      }
     });
 
-    // When the "Yes" button is clicked, start the fireworks effect.
-    yesBtn.addEventListener('click', function () {
+    // When "Yes" is clicked, launch fireworks and show a loving message.
+    yesBtn.addEventListener('click', () => {
       startFireworks();
-      // You can also show a special message if desired.
       setTimeout(() => {
         alert("Yay! Happy Valentine's Day!");
       }, 500);
     });
 
-    // Fireworks effect using canvas-confetti:
+    /**
+     * Launch a fireworks (confetti) effect using canvas-confetti.
+     * The effect runs for 5 seconds.
+     */
     function startFireworks() {
-      const duration = 5000; // animation duration in ms
+      const duration = 5000;
       const animationEnd = Date.now() + duration;
       const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
 
-      const interval = setInterval(function () {
+      const interval = setInterval(() => {
         const timeLeft = animationEnd - Date.now();
-
         if (timeLeft <= 0) {
           clearInterval(interval);
           return;
         }
-
-        // Adjust the number of particles based on the remaining time
         const particleCount = Math.floor(50 * (timeLeft / duration));
-        // Fire from random positions across the screen.
         confetti(Object.assign({}, defaults, {
           particleCount,
-          origin: {
-            x: Math.random(),
-            y: Math.random() - 0.2
-          }
+          origin: { x: Math.random(), y: Math.random() - 0.2 }
         }));
       }, 250);
     }

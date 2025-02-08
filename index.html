@@ -38,7 +38,7 @@
       padding: 10px 20px;
       font-size: 1rem;
       border: none;
-      border-radius: 5px;
+      border-radius: 25px; /* Rounded edges */
       cursor: pointer;
       transition: transform 0.2s ease-in-out;
     }
@@ -66,46 +66,91 @@
       }
     }
 
-    /* Heart Animation */
-    .heart {
+    /* Fireworks Animation */
+    .firework {
       position: absolute;
       width: 10px;
       height: 10px;
-      background: red;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      animation: heart-float 3s infinite ease-in-out;
+      background: yellow;
+      border-radius: 50%;
+      box-shadow: 0 0 10px yellow, 0 0 20px orange;
+      animation: explode 1s forwards;
     }
 
-    @keyframes heart-float {
+    @keyframes explode {
       0% {
+        transform: scale(1);
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
       }
       100% {
+        transform: scale(5);
         opacity: 0;
-        transform: translate(-50%, -50%) scale(2);
+      }
+    }
+
+    /* Flower Animation */
+    .flower {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: pink;
+      border-radius: 50%;
+      box-shadow: 0 0 10px pink, 0 0 20px red;
+      animation: float 3s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-20px) rotate(180deg);
+      }
+      100% {
+        transform: translateY(0) rotate(360deg);
+      }
+    }
+
+    /* Thank You Message */
+    .thank-you {
+      display: none;
+      font-size: 2rem;
+      color: white;
+      text-shadow: 0 0 10px pink, 0 0 20px red;
+      animation: fadeIn 2s forwards;
+    }
+
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Will you be my Valentine?</h1>
+    <h1 id="question">Will you be my Valentine?</h1>
     <div class="buttons">
       <button id="yesButton">Yes</button>
       <button id="noButton">No</button>
     </div>
+    <div class="thank-you">❤️ Thank You! ❤️</div>
   </div>
 
   <script>
     const noButton = document.getElementById('noButton');
+    const yesButton = document.getElementById('yesButton');
     const container = document.querySelector('.container');
+    const question = document.getElementById('question');
+    const thankYou = document.querySelector('.thank-you');
 
     // Move the "No" button when hovered
     noButton.addEventListener('mouseover', () => {
       const containerRect = container.getBoundingClientRect();
+      const yesButtonRect = yesButton.getBoundingClientRect();
       const buttonWidth = noButton.offsetWidth;
       const buttonHeight = noButton.offsetHeight;
 
@@ -116,7 +161,9 @@
         newTop = Math.random() * (containerRect.height - buttonHeight);
       } while (
         Math.abs(newLeft - noButton.offsetLeft) < 100 &&
-        Math.abs(newTop - noButton.offsetTop) < 100
+        Math.abs(newTop - noButton.offsetTop) < 100 &&
+        !(newLeft > yesButtonRect.left && newLeft < yesButtonRect.right &&
+          newTop > yesButtonRect.top && newTop < yesButtonRect.bottom)
       );
 
       noButton.style.position = 'absolute';
@@ -124,22 +171,44 @@
       noButton.style.top = `${newTop}px`;
     });
 
-    // Add hearts on click for "Yes"
-    const yesButton = document.getElementById('yesButton');
+    // Handle "Yes" button click
     yesButton.addEventListener('click', () => {
-      alert("Yay! I'm so happy! ❤️");
-      setInterval(createHeart, 100);
+      // Hide question and buttons
+      question.style.display = 'none';
+      yesButton.style.display = 'none';
+      noButton.style.display = 'none';
+
+      // Show thank-you message
+      thankYou.style.display = 'block';
+
+      // Start fireworks and flowers
+      setInterval(createFirework, 100);
+      setInterval(createFlower, 200);
     });
 
-    function createHeart() {
-      const heart = document.createElement('div');
-      heart.classList.add('heart');
-      heart.style.left = `${Math.random() * 100}vw`;
-      heart.style.top = `${Math.random() * 100}vh`;
-      document.body.appendChild(heart);
+    // Create fireworks
+    function createFirework() {
+      const firework = document.createElement('div');
+      firework.classList.add('firework');
+      firework.style.left = `${Math.random() * 100}vw`;
+      firework.style.top = `${Math.random() * 100}vh`;
+      document.body.appendChild(firework);
 
       setTimeout(() => {
-        heart.remove();
+        firework.remove();
+      }, 1000);
+    }
+
+    // Create flowers
+    function createFlower() {
+      const flower = document.createElement('div');
+      flower.classList.add('flower');
+      flower.style.left = `${Math.random() * 100}vw`;
+      flower.style.top = `${Math.random() * 100}vh`;
+      document.body.appendChild(flower);
+
+      setTimeout(() => {
+        flower.remove();
       }, 3000);
     }
   </script>

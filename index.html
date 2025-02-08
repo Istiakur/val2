@@ -4,56 +4,81 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Will You Be My Valentine?</title>
-  <!-- A romantic Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+  <!-- Romantic Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
   <style>
-    /* Basic reset */
-    * {
-      box-sizing: border-box;
-    }
+    /* Reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    /* Animated Gradient Background */
     body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-      background: radial-gradient(circle, #ffdde1, #ee9ca7);
-      overflow: hidden;
+      font-family: 'Dancing Script', cursive;
+      background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fad0c4, #ff9a9e);
+      background-size: 400% 400%;
+      animation: gradientAnimation 15s ease infinite;
       height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+    
+    @keyframes gradientAnimation {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    /* Container with a frosted glass effect */
     .container {
       position: relative;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
       text-align: center;
+      padding: 30px 40px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     }
+    
+    /* Headline with fade-in effect */
     h1 {
       font-family: 'Great Vibes', cursive;
-      color: #fff;
       font-size: 4em;
+      color: #fff;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
       margin-bottom: 30px;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      animation: fadeIn 2s forwards;
     }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
     .buttons {
       position: relative;
-      display: flex;
-      gap: 20px;
+      display: inline-block;
     }
+    
     button {
       padding: 15px 30px;
       font-size: 1.2em;
       border: none;
-      border-radius: 30px;
+      border-radius: 50px;
       cursor: pointer;
       transition: transform 0.2s, background-color 0.3s;
+      outline: none;
     }
+    
+    /* "Yes" button styling */
     #yesBtn {
       background-color: #28a745;
       color: #fff;
+      z-index: 2;
     }
-    /* "No" button starts positioned near the "Yes" button, but its position will be updated */
+    
+    /* "No" button styling & starting position */
     #noBtn {
       background-color: #dc3545;
       color: #fff;
@@ -61,10 +86,25 @@
       left: calc(50% + 150px);
       top: 50%;
       transform: translate(-50%, -50%);
+      z-index: 1;
       transition: left 0.3s ease, top 0.3s ease;
     }
+    
     button:hover {
       transform: scale(1.1);
+    }
+    
+    /* Hidden love message */
+    .love-message {
+      margin-top: 30px;
+      font-size: 2em;
+      color: #fff;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+    
+    .love-message.visible {
+      opacity: 1;
     }
   </style>
 </head>
@@ -75,36 +115,39 @@
       <button id="yesBtn">Yes</button>
       <button id="noBtn">No</button>
     </div>
+    <div class="love-message" id="loveMessage">
+      <p>You made my heart skip a beat! ❤️</p>
+    </div>
   </div>
-
-  <!-- Fireworks (confetti) library -->
+  
+  <!-- Confetti / Fireworks Library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
     const container = document.querySelector('.container');
     const noBtn = document.getElementById('noBtn');
     const yesBtn = document.getElementById('yesBtn');
+    const loveMessage = document.getElementById('loveMessage');
 
     /**
-     * Move the "No" button to a new random position within the container.
-     * Uses container.clientWidth/Height to ensure the button always stays in view.
+     * Move the "No" button to a new random position within the container,
+     * ensuring it stays within view with some padding.
      */
     function moveNoButton() {
-      const containerWidth = container.clientWidth;
-      const containerHeight = container.clientHeight;
-      const btnWidth = noBtn.offsetWidth;
-      const btnHeight = noBtn.offsetHeight;
-      const maxX = containerWidth - btnWidth;
-      const maxY = containerHeight - btnHeight;
-      const newX = Math.random() * maxX;
-      const newY = Math.random() * maxY;
+      const containerRect = container.getBoundingClientRect();
+      const btnRect = noBtn.getBoundingClientRect();
+      const padding = 20;
+      const maxX = containerRect.width - btnRect.width - padding;
+      const maxY = containerRect.height - btnRect.height - padding;
+      const newX = Math.random() * (maxX - padding) + padding;
+      const newY = Math.random() * (maxY - padding) + padding;
       noBtn.style.left = newX + 'px';
       noBtn.style.top = newY + 'px';
     }
 
-    // When the cursor enters the "No" button, move it immediately.
+    // When the mouse enters the "No" button, move it.
     noBtn.addEventListener('mouseenter', moveNoButton);
 
-    // If the mouse moves close to the "No" button (within 100px), move it.
+    // If the mouse gets within 100px of the "No" button, move it.
     container.addEventListener('mousemove', (e) => {
       const btnRect = noBtn.getBoundingClientRect();
       const btnCenterX = btnRect.left + btnRect.width / 2;
@@ -115,22 +158,19 @@
       }
     });
 
-    // When "Yes" is clicked, launch fireworks and show a loving message.
+    // When "Yes" is clicked, start the confetti effect and reveal the love message.
     yesBtn.addEventListener('click', () => {
-      startFireworks();
-      setTimeout(() => {
-        alert("Yay! Happy Valentine's Day!");
-      }, 500);
+      startConfetti();
+      loveMessage.classList.add('visible');
     });
 
     /**
-     * Launch a fireworks (confetti) effect using canvas-confetti.
-     * The effect runs for 5 seconds.
+     * Launch a confetti effect using canvas-confetti for 5 seconds.
      */
-    function startFireworks() {
+    function startConfetti() {
       const duration = 5000;
       const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
 
       const interval = setInterval(() => {
         const timeLeft = animationEnd - Date.now();

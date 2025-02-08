@@ -8,19 +8,23 @@
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
   <style>
     /* Reset */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     
-    /* Animated Gradient Background */
+    /* Animated gradient background */
     body {
       font-family: 'Dancing Script', cursive;
       background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fad0c4, #ff9a9e);
       background-size: 400% 400%;
       animation: gradientAnimation 15s ease infinite;
       height: 100vh;
-      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
     
     @keyframes gradientAnimation {
@@ -29,11 +33,16 @@
       100% { background-position: 0% 50%; }
     }
     
-    /* Container with a frosted glass effect */
+    /* Larger container box with frosted glass effect */
     .container {
       position: relative;
+      width: 700px;
+      height: 500px;
+      max-width: 90vw;
+      max-height: 90vh;
+      margin: auto;
       text-align: center;
-      padding: 30px 40px;
+      padding: 40px;
       background: rgba(255, 255, 255, 0.15);
       border-radius: 20px;
       backdrop-filter: blur(10px);
@@ -45,7 +54,7 @@
       font-family: 'Great Vibes', cursive;
       font-size: 4em;
       color: #fff;
-      text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
       margin-bottom: 30px;
       opacity: 0;
       animation: fadeIn 2s forwards;
@@ -56,9 +65,10 @@
       to { opacity: 1; transform: translateY(0); }
     }
     
+    /* Button container */
     .buttons {
       position: relative;
-      display: inline-block;
+      display: block;
     }
     
     button {
@@ -67,27 +77,25 @@
       border: none;
       border-radius: 50px;
       cursor: pointer;
-      transition: transform 0.2s, background-color 0.3s;
       outline: none;
     }
     
-    /* "Yes" button styling */
+    /* Yes button (stays in document flow) */
     #yesBtn {
       background-color: #28a745;
       color: #fff;
+      position: relative;
       z-index: 2;
     }
     
-    /* "No" button styling & starting position */
+    /* No button (absolutely positioned within the container) */
     #noBtn {
       background-color: #dc3545;
       color: #fff;
       position: absolute;
-      left: calc(50% + 150px);
-      top: 50%;
-      transform: translate(-50%, -50%);
       z-index: 1;
-      transition: left 0.3s ease, top 0.3s ease;
+      transition: opacity 0.2s ease, left 0.3s ease, top 0.3s ease;
+      opacity: 1;
     }
     
     button:hover {
@@ -116,62 +124,130 @@
       <button id="noBtn">No</button>
     </div>
     <div class="love-message" id="loveMessage">
-      <p>You made my heart skip a beat! ❤️</p>
+      <p>You made my day ❤️</p>
     </div>
   </div>
   
-  <!-- Confetti / Fireworks Library -->
+  <!-- Confetti Library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
     const container = document.querySelector('.container');
-    const noBtn = document.getElementById('noBtn');
     const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
     const loveMessage = document.getElementById('loveMessage');
-
+    
+    // Flag to prevent multiple simultaneous animations
+    let isAnimating = false;
+    
     /**
-     * Move the "No" button to a new random position within the container,
-     * ensuring it stays within view with some padding.
+     * Positions the "No" button initially directly below the "Yes" button.
+     * Using offset values ensures it is exactly aligned within the container.
+     */
+    function positionInitialNoButton() {
+      const margin = 20; // space between the buttons
+      
+      // Use offset values relative to the container (since container is position: relative)
+      const yesLeft = yesBtn.offsetLeft;
+      const yesTop = yesBtn.offsetTop;
+      const yesWidth = yesBtn.offsetWidth;
+      const noWidth = noBtn.offsetWidth;
+      
+      const newLeft = yesLeft + (yesWidth - noWidth) / 2;
+      let newTop = yesTop + yesBtn.offsetHeight + margin;
+      
+      // Ensure the No button stays within the container vertically.
+      if (newTop + noBtn.offsetHeight > container.clientHeight - margin) {
+        newTop = container.clientHeight - noBtn.offsetHeight - margin;
+      }
+      
+      noBtn.style.left = newLeft + 'px';
+      noBtn.style.top = newTop + 'px';
+    }
+    
+    /**
+     * Checks if two rectangles intersect.
+     */
+    function rectsIntersect(r1, r2) {
+      return !(r2.left > r1.left + r1.width ||
+               r2.left + r2.width < r1.left ||
+               r2.top > r1.top + r1.height ||
+               r2.top + r2.height < r1.top);
+    }
+    
+    /**
+     * Moves the "No" button to a new random position within the container,
+     * ensuring it does not overlap the "Yes" button.
      */
     function moveNoButton() {
-      const containerRect = container.getBoundingClientRect();
-      const btnRect = noBtn.getBoundingClientRect();
-      const padding = 20;
-      const maxX = containerRect.width - btnRect.width - padding;
-      const maxY = containerRect.height - btnRect.height - padding;
-      const newX = Math.random() * (maxX - padding) + padding;
-      const newY = Math.random() * (maxY - padding) + padding;
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+      const btnWidth = noBtn.offsetWidth;
+      const btnHeight = noBtn.offsetHeight;
+      const padding = 20; // space from container edges
+      
+      // Get the Yes button's bounding box relative to the container.
+      const yesRect = {
+        left: yesBtn.offsetLeft,
+        top: yesBtn.offsetTop,
+        width: yesBtn.offsetWidth,
+        height: yesBtn.offsetHeight
+      };
+      
+      let newX, newY, noRect;
+      let attempts = 0;
+      const maxAttempts = 20;
+      
+      do {
+        newX = Math.random() * (containerWidth - btnWidth - 2 * padding) + padding;
+        newY = Math.random() * (containerHeight - btnHeight - 2 * padding) + padding;
+        noRect = { left: newX, top: newY, width: btnWidth, height: btnHeight };
+        attempts++;
+      } while (rectsIntersect(noRect, yesRect) && attempts < maxAttempts);
+      
       noBtn.style.left = newX + 'px';
       noBtn.style.top = newY + 'px';
     }
-
-    // When the mouse enters the "No" button, move it.
-    noBtn.addEventListener('mouseenter', moveNoButton);
-
-    // If the mouse gets within 100px of the "No" button, move it.
-    container.addEventListener('mousemove', (e) => {
-      const btnRect = noBtn.getBoundingClientRect();
-      const btnCenterX = btnRect.left + btnRect.width / 2;
-      const btnCenterY = btnRect.top + btnRect.height / 2;
-      const distance = Math.hypot(e.clientX - btnCenterX, e.clientY - btnCenterY);
-      if (distance < 100) {
+    
+    /**
+     * Fades out the "No" button, moves it, then fades it back in.
+     */
+    function disappearAndMoveNoButton() {
+      if (isAnimating) return;
+      isAnimating = true;
+      
+      // Fade out the button.
+      noBtn.style.transition = 'opacity 0.2s ease';
+      noBtn.style.opacity = 0;
+      
+      setTimeout(() => {
         moveNoButton();
-      }
-    });
-
-    // When "Yes" is clicked, start the confetti effect and reveal the love message.
+        // Fade in the button.
+        noBtn.style.transition = 'opacity 0.2s ease';
+        noBtn.style.opacity = 1;
+        setTimeout(() => {
+          isAnimating = false;
+        }, 200);
+      }, 200);
+    }
+    
+    // When the No button is hovered or clicked, trigger the disappearance & move.
+    noBtn.addEventListener('mouseenter', disappearAndMoveNoButton);
+    noBtn.addEventListener('click', disappearAndMoveNoButton);
+    
+    // When the Yes button is clicked, trigger confetti and show a love message.
     yesBtn.addEventListener('click', () => {
       startConfetti();
       loveMessage.classList.add('visible');
     });
-
+    
     /**
-     * Launch a confetti effect using canvas-confetti for 5 seconds.
+     * Launches a confetti effect using canvas-confetti for 5 seconds.
      */
     function startConfetti() {
       const duration = 5000;
       const animationEnd = Date.now() + duration;
       const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
-
+      
       const interval = setInterval(() => {
         const timeLeft = animationEnd - Date.now();
         if (timeLeft <= 0) {
@@ -185,6 +261,9 @@
         }));
       }, 250);
     }
+    
+    // Position the No button initially below the Yes button when the page loads.
+    window.addEventListener('load', positionInitialNoButton);
   </script>
 </body>
 </html>

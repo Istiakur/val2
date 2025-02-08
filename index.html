@@ -80,7 +80,7 @@
       outline: none;
     }
     
-    /* Yes button (stays in document flow) */
+    /* Yes button (in document flow) */
     #yesBtn {
       background-color: #28a745;
       color: #fff;
@@ -124,7 +124,7 @@
       <button id="noBtn">No</button>
     </div>
     <div class="love-message" id="loveMessage">
-      <p>You made my day ❤️</p>
+      <p>You made my heart skip a beat! ❤️</p>
     </div>
   </div>
   
@@ -136,26 +136,25 @@
     const noBtn = document.getElementById('noBtn');
     const loveMessage = document.getElementById('loveMessage');
     
-    // Flag to prevent multiple simultaneous animations
+    // Prevent overlapping animations
     let isAnimating = false;
+    // The fixed distance (in pixels) from the Yes button’s center.
+    const fixedDistance = 150;
+    // Margin used for containment.
+    const margin = 20;
     
     /**
-     * Positions the "No" button initially directly below the "Yes" button.
-     * Using offset values ensures it is exactly aligned within the container.
+     * Positions the No button initially directly below the Yes button.
      */
     function positionInitialNoButton() {
-      const margin = 20; // space between the buttons
+      let newLeft = yesBtn.offsetLeft + (yesBtn.offsetWidth - noBtn.offsetWidth) / 2;
+      let newTop = yesBtn.offsetTop + yesBtn.offsetHeight + margin;
       
-      // Use offset values relative to the container (since container is position: relative)
-      const yesLeft = yesBtn.offsetLeft;
-      const yesTop = yesBtn.offsetTop;
-      const yesWidth = yesBtn.offsetWidth;
-      const noWidth = noBtn.offsetWidth;
-      
-      const newLeft = yesLeft + (yesWidth - noWidth) / 2;
-      let newTop = yesTop + yesBtn.offsetHeight + margin;
-      
-      // Ensure the No button stays within the container vertically.
+      // Ensure the No button stays within the container.
+      if (newLeft < margin) newLeft = margin;
+      if (newLeft + noBtn.offsetWidth > container.clientWidth - margin) {
+        newLeft = container.clientWidth - noBtn.offsetWidth - margin;
+      }
       if (newTop + noBtn.offsetHeight > container.clientHeight - margin) {
         newTop = container.clientHeight - noBtn.offsetHeight - margin;
       }
@@ -165,63 +164,61 @@
     }
     
     /**
-     * Checks if two rectangles intersect.
-     */
-    function rectsIntersect(r1, r2) {
-      return !(r2.left > r1.left + r1.width ||
-               r2.left + r2.width < r1.left ||
-               r2.top > r1.top + r1.height ||
-               r2.top + r2.height < r1.top);
-    }
-    
-    /**
-     * Moves the "No" button to a new random position within the container,
-     * ensuring it does not overlap the "Yes" button.
+     * Moves the No button to a new position that is exactly a fixed distance from
+     * the Yes button's center (at a random angle) and ensures it stays within the container.
      */
     function moveNoButton() {
-      const containerWidth = container.clientWidth;
-      const containerHeight = container.clientHeight;
-      const btnWidth = noBtn.offsetWidth;
-      const btnHeight = noBtn.offsetHeight;
-      const padding = 20; // space from container edges
+      // Compute the center of the Yes button (relative to the container)
+      const yesCenterX = yesBtn.offsetLeft + yesBtn.offsetWidth / 2;
+      const yesCenterY = yesBtn.offsetTop + yesBtn.offsetHeight / 2;
+      const noWidth = noBtn.offsetWidth;
+      const noHeight = noBtn.offsetHeight;
       
-      // Get the Yes button's bounding box relative to the container.
-      const yesRect = {
-        left: yesBtn.offsetLeft,
-        top: yesBtn.offsetTop,
-        width: yesBtn.offsetWidth,
-        height: yesBtn.offsetHeight
-      };
-      
-      let newX, newY, noRect;
+      let newCenterX, newCenterY, newLeft, newTop;
       let attempts = 0;
       const maxAttempts = 20;
       
       do {
-        newX = Math.random() * (containerWidth - btnWidth - 2 * padding) + padding;
-        newY = Math.random() * (containerHeight - btnHeight - 2 * padding) + padding;
-        noRect = { left: newX, top: newY, width: btnWidth, height: btnHeight };
+        // Choose a random angle (in radians)
+        const angle = Math.random() * 2 * Math.PI;
+        newCenterX = yesCenterX + fixedDistance * Math.cos(angle);
+        newCenterY = yesCenterY + fixedDistance * Math.sin(angle);
+        newLeft = newCenterX - noWidth / 2;
+        newTop = newCenterY - noHeight / 2;
         attempts++;
-      } while (rectsIntersect(noRect, yesRect) && attempts < maxAttempts);
+      } while (
+        (newLeft < margin || newTop < margin ||
+         newLeft + noWidth > container.clientWidth - margin ||
+         newTop + noHeight > container.clientHeight - margin) && 
+        attempts < maxAttempts
+      );
       
-      noBtn.style.left = newX + 'px';
-      noBtn.style.top = newY + 'px';
+      // If after several attempts the button is still out-of-bounds, clamp the position.
+      if (newLeft < margin) newLeft = margin;
+      if (newTop < margin) newTop = margin;
+      if (newLeft + noWidth > container.clientWidth - margin)
+        newLeft = container.clientWidth - noWidth - margin;
+      if (newTop + noHeight > container.clientHeight - margin)
+        newTop = container.clientHeight - noHeight - margin;
+      
+      noBtn.style.left = newLeft + 'px';
+      noBtn.style.top = newTop + 'px';
     }
     
     /**
-     * Fades out the "No" button, moves it, then fades it back in.
+     * Fades out the No button, moves it, then fades it back in.
      */
     function disappearAndMoveNoButton() {
       if (isAnimating) return;
       isAnimating = true;
       
-      // Fade out the button.
+      // Fade out
       noBtn.style.transition = 'opacity 0.2s ease';
       noBtn.style.opacity = 0;
       
       setTimeout(() => {
         moveNoButton();
-        // Fade in the button.
+        // Fade in
         noBtn.style.transition = 'opacity 0.2s ease';
         noBtn.style.opacity = 1;
         setTimeout(() => {
@@ -230,11 +227,11 @@
       }, 200);
     }
     
-    // When the No button is hovered or clicked, trigger the disappearance & move.
+    // Trigger the move when the No button is hovered or clicked.
     noBtn.addEventListener('mouseenter', disappearAndMoveNoButton);
     noBtn.addEventListener('click', disappearAndMoveNoButton);
     
-    // When the Yes button is clicked, trigger confetti and show a love message.
+    // When the Yes button is clicked, trigger confetti and show the love message.
     yesBtn.addEventListener('click', () => {
       startConfetti();
       loveMessage.classList.add('visible');
@@ -262,7 +259,7 @@
       }, 250);
     }
     
-    // Position the No button initially below the Yes button when the page loads.
+    // Set the initial position when the page loads.
     window.addEventListener('load', positionInitialNoButton);
   </script>
 </body>
